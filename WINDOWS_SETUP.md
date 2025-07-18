@@ -1,37 +1,41 @@
-# Windows Setup Instructions
+# Windows Setup Instructions - FIXED
 
-Since you're on Windows and encountered the environment variable error, here are **3 different ways** to run the project:
+The error you encountered is due to Node.js version compatibility. Here are **5 solutions** ordered from easiest to most technical:
 
-## Option 1: Use the Windows Batch File (Easiest)
-
-I've created a Windows batch file for you:
+## ✅ Option 1: Simple JavaScript Server (Recommended for Windows)
 
 ```bash
-# Just double-click this file or run:
+node simple-start.js
+```
+
+This bypasses the vite configuration issue entirely.
+
+## ✅ Option 2: Update Node.js (Best Long-term Solution)
+
+Your Node.js v18.20.8 is causing the issue. Download and install Node.js 20+ from:
+https://nodejs.org/
+
+Then run:
+```bash
+npm run dev
+```
+
+## ✅ Option 3: Use the Windows Batch File
+
+```bash
 start-windows.bat
 ```
 
-## Option 2: Install cross-env (Recommended)
-
-The cross-env package is already installed, but you need to run:
+## ✅ Option 4: Direct Server Start
 
 ```bash
-npx cross-env NODE_ENV=development tsx server/index.ts
+npx tsx server/index.ts
 ```
 
-## Option 3: Use PowerShell
-
-If you're using PowerShell, run:
+## ✅ Option 5: PowerShell Method
 
 ```powershell
-$env:NODE_ENV="development"; tsx server/index.ts
-```
-
-## Option 4: Manual Start (If others fail)
-
-```bash
-# Start the server directly without environment variable
-tsx server/index.ts
+$env:NODE_ENV="development"; npx tsx server/index.ts
 ```
 
 ## After Starting

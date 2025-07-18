@@ -1,4 +1,8 @@
 @echo off
 echo Starting Voice Betting Terminal...
+echo Installing dependencies...
+call npm install
+echo.
+echo Starting server...
 set NODE_ENV=development
-tsx server/index.ts
+call npx tsx server/index.ts

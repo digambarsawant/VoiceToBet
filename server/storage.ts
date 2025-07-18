@@ -88,6 +88,7 @@ export class MemStorage implements IStorage {
       ...insertBet,
       id: this.currentBetId++,
       createdAt: new Date(),
+      status: insertBet.status || "pending",
     };
     this.bets.set(bet.id, bet);
     return bet;
@@ -126,6 +127,7 @@ export class MemStorage implements IStorage {
     const match: Match = {
       ...insertMatch,
       id: this.currentMatchId++,
+      isLive: insertMatch.isLive || false,
     };
     this.matches.set(match.id, match);
     return match;

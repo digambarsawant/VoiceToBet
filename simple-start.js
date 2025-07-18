@@ -4,7 +4,7 @@ const path = require('path');
 const { createServer } = require('http');
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 3000;
 
 // In-memory storage for demo
 let bets = [

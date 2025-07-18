@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Betting Terminal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .voice-button {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #3B82F6;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            margin: 20px auto;
+            display: block;
+            transition: all 0.3s ease;
+        }
+        
+        .voice-button:hover {
+            background: #2563EB;
+            transform: scale(1.05);
+        }
+        
+        .voice-button.listening {
+            background: #EF4444;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: 500;
+        }
+        
+        .status.ready { background: #D1FAE5; color: #065F46; }
+        .status.listening { background: #FEE2E2; color: #991B1B; }
+        .status.processing { background: #FEF3C7; color: #92400E; }
+        
+        .betting-slip {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .betting-slip {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .bet-item {
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        
+        .bet-item h3 {
+            color: #1E293B;
+            margin-bottom: 8px;
+        }
+        
+        .bet-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+        }
+        
+        .odds-button {
+            background: #F1F5F9;
+            border: 1px solid #CBD5E1;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .odds-button:hover {
+            background: #E2E8F0;
+        }
+        
+        .examples {
+            background: #EBF8FF;
+            border: 1px solid #3B82F6;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+        
+        .examples h3 {
+            color: #1E40AF;
+            margin-bottom: 12px;
+        }
+        
+        .examples ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .examples li {
+            background: white;
+            padding: 8px 12px;
+            margin: 4px 0;
+            border-radius: 4px;
+            color: #1E40AF;
+        }
+        
+        .transcript {
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+            font-family: monospace;
+            min-height: 60px;
+        }
+        
+        .audio-controls {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .slider {
+            width: 150px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎤 Voice Betting Terminal</h1>
+            <p>Place bets using voice commands - Click microphone and speak</p>
+        </div>
+
+        <div class="card">
+            <h2>Voice Commands</h2>
+            
+            <div id="status" class="status ready">Ready to listen - Click microphone to start</div>
+            
+            <button id="voiceBtn" class="voice-button" onclick="toggleVoiceRecognition()">
+                🎤
+            </button>
+            
+            <div class="examples">
+                <h3>Try saying:</h3>
+                <ul>
+                    <li>"Bet 10 pounds on Djokovic to win"</li>
+                    <li>"Bet 25 on Arsenal to win"</li>
+                    <li>"Show me current odds"</li>
+                    <li>"Cancel last bet"</li>
+                </ul>
+            </div>
+            
+            <div class="transcript">
+                <strong>Last command:</strong>
+                <div id="transcript">Say something...</div>
+            </div>
+        </div>
+
+        <div class="betting-slip">
+            <div class="card">
+                <h2>📋 Current Bets</h2>
+                <div id="bets">
+                    <div class="bet-item">
+                        <h3>Novak Djokovic to win</h3>
+                        <div class="bet-details">
+                            <span>Stake: £10.00</span>
+                            <span>Odds: 1.75</span>
+                        </div>
+                        <div class="bet-details">
+                            <span>Match: Wimbledon Final</span>
+                            <span>Potential: £17.50</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📊 Live Odds</h2>
+                <div class="bet-item">
+                    <h3>Wimbledon Final</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px;">
+                        <button class="odds-button" onclick="quickBet('Djokovic', 1.75)">
+                            Djokovic<br><strong>1.75</strong>
+                        </button>
+                        <button class="odds-button" onclick="quickBet('Nadal', 2.10)">
+                            Nadal<br><strong>2.10</strong>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="bet-item">
+                    <h3>Arsenal vs Man City</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px;">
+                        <button class="odds-button" onclick="quickBet('Arsenal', 2.40)">
+                            Arsenal<br><strong>2.40</strong>
+                        </button>
+                        <button class="odds-button" onclick="quickBet('Draw', 3.20)">
+                            Draw<br><strong>3.20</strong>
+                        </button>
+                        <button class="odds-button" onclick="quickBet('Man City', 3.10)">
+                            Man City<br><strong>3.10</strong>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔊 Audio Settings</h2>
+            <div class="audio-controls">
+                <label>Volume: <input type="range" id="volume" class="slider" min="0" max="100" value="75" onchange="updateVolume()"></label>
+                <label>Speed: <input type="range" id="speed" class="slider" min="0.5" max="2" step="0.1" value="1" onchange="updateSpeed()"></label>
+                <button onclick="testAudio()" style="padding: 10px 20px; border-radius: 6px; border: none; background: #F59E0B; color: white; cursor: pointer;">Test Audio</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let recognition;
+        let isListening = false;
+        let synthesis = window.speechSynthesis;
+        let volume = 0.75;
+        let rate = 1;
+        
+        // Initialize speech recognition
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+            
+            recognition.onstart = function() {
+                isListening = true;
+                updateStatus('listening', 'Listening... Speak now');
+                document.getElementById('voiceBtn').classList.add('listening');
+            };
+            
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('transcript').textContent = transcript;
+                processVoiceCommand(transcript);
+            };
+            
+            recognition.onend = function() {
+                isListening = false;
+                updateStatus('ready', 'Ready to listen - Click microphone to start');
+                document.getElementById('voiceBtn').classList.remove('listening');
+            };
+            
+            recognition.onerror = function(event) {
+                updateStatus('ready', 'Error: ' + event.error + ' - Try again');
+                document.getElementById('voiceBtn').classList.remove('listening');
+            };
+        } else {
+            updateStatus('ready', 'Speech recognition not supported - Try Chrome or Edge');
+        }
+        
+        function toggleVoiceRecognition() {
+            if (!recognition) {
+                speak('Speech recognition is not supported in this browser. Please use Chrome or Edge.');
+                return;
+            }
+            
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        }
+        
+        function updateStatus(type, message) {
+            const status = document.getElementById('status');
+            status.className = 'status ' + type;
+            status.textContent = message;
+        }
+        
+        function speak(text) {
+            if (!synthesis) return;
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.volume = volume;
+            utterance.rate = rate;
+            utterance.lang = 'en-US';
+            
+            synthesis.cancel(); // Stop any ongoing speech
+            synthesis.speak(utterance);
+        }
+        
+        function processVoiceCommand(command) {
+            updateStatus('processing', 'Processing: ' + command);
+            
+            const lowerCommand = command.toLowerCase();
+            
+            if (lowerCommand.includes('bet') && lowerCommand.includes('djokovic')) {
+                const confirmation = 'Bet placed: 10 pounds on Djokovic to win at odds 1.75. Potential win 17 pounds 50.';
+                speak(confirmation);
+                updateStatus('ready', confirmation);
+                
+            } else if (lowerCommand.includes('bet') && lowerCommand.includes('arsenal')) {
+                const confirmation = 'Bet placed: 10 pounds on Arsenal to win at odds 2.40. Potential win 24 pounds.';
+                speak(confirmation);
+                updateStatus('ready', confirmation);
+                
+            } else if (lowerCommand.includes('show') && lowerCommand.includes('odds')) {
+                const confirmation = 'Displaying current odds: Djokovic 1.75, Nadal 2.10, Arsenal 2.40, Manchester City 3.10';
+                speak(confirmation);
+                updateStatus('ready', confirmation);
+                
+            } else if (lowerCommand.includes('cancel')) {
+                const confirmation = 'Last bet has been cancelled';
+                speak(confirmation);
+                updateStatus('ready', confirmation);
+                
+            } else {
+                const confirmation = 'Sorry, I did not understand that command. Try saying: Bet 10 pounds on Djokovic to win';
+                speak(confirmation);
+                updateStatus('ready', confirmation);
+            }
+        }
+        
+        function quickBet(selection, odds) {
+            const confirmation = `Quick bet placed: 10 pounds on ${selection} at odds ${odds}. Potential win ${(10 * odds).toFixed(2)} pounds.`;
+            speak(confirmation);
+            updateStatus('ready', confirmation);
+        }
+        
+        function updateVolume() {
+            volume = document.getElementById('volume').value / 100;
+        }
+        
+        function updateSpeed() {
+            rate = document.getElementById('speed').value;
+        }
+        
+        function testAudio() {
+            speak('This is a test of the audio settings. Volume and speed are working correctly.');
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            speak('Voice Betting Terminal loaded. Click the microphone button to start placing bets with your voice.');
+        });
+    </script>
+</body>
+</html>

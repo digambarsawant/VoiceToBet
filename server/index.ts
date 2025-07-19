@@ -57,15 +57,23 @@ app.use((req, res, next) => {
   }
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
+  // Other ports are firewalled. Default to 3000 if not specified.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
+  const port = parseInt(process.env.PORT || '3000', 10);
+  
+  server.listen(port, () => {
     log(`serving on port ${port}`);
+  }).on('error', (err: any) => {
+    if (err.code === 'EACCES') {
+      console.error(`Permission denied on port ${port}. Try running with different port:`);
+      console.error(`PORT=8080 npx cross-env NODE_ENV=development tsx server/index.ts`);
+    } else if (err.code === 'EADDRINUSE') {
+      console.error(`Port ${port} is already in use. Try a different port:`);
+      console.error(`PORT=8080 npx cross-env NODE_ENV=development tsx server/index.ts`);
+    } else {
+      console.error('Server error:', err);
+    }
+    process.exit(1);
   });
 })();

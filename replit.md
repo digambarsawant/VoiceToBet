@@ -7,6 +7,8 @@ This is a voice-controlled betting terminal application built with React and Exp
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Project setup: Server-based development (not standalone HTML)
+Focus: Complete local development environment with proper server architecture
 
 ## System Architecture
 

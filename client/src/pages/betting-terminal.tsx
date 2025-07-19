@@ -1,8 +1,10 @@
 import { VoiceInterface } from "@/components/voice-interface";
+import { AIVoiceInterface } from "@/components/ai-voice-interface";
 import { BettingSlip } from "@/components/betting-slip";
 import { OddsDisplay } from "@/components/odds-display";
 import { AudioControls } from "@/components/audio-controls";
 import { SystemStatus } from "@/components/system-status";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Volume2, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -85,8 +87,19 @@ export default function BettingTerminal() {
       </header>
 
       <main id="main-content" className="max-w-4xl mx-auto px-4 py-6" role="main">
-        {/* Voice Command Interface */}
-        <VoiceInterface />
+        {/* Voice Command Interface with AI Options */}
+        <Tabs defaultValue="ai-voice" className="mb-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="ai-voice">AI Voice (Whisper + GPT)</TabsTrigger>
+            <TabsTrigger value="browser-voice">Browser Voice</TabsTrigger>
+          </TabsList>
+          <TabsContent value="ai-voice">
+            <AIVoiceInterface />
+          </TabsContent>
+          <TabsContent value="browser-voice">
+            <VoiceInterface />
+          </TabsContent>
+        </Tabs>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Current Betting Slip */}

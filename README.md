@@ -301,39 +301,58 @@ npm install
 
 This project uses several AI technologies to understand and process human speech:
 
-### 🎤 **1. Automatic Speech Recognition (ASR)**
-**Location**: `client/src/hooks/use-speech-recognition.ts`
+### 🎤 **1. Advanced Speech Recognition**
 
-**Technology**: Browser's built-in Web Speech API
-- Converts spoken words into text
-- Real-time voice processing 
-- Multi-language support (configured for English)
-- Confidence scoring and error handling
+**Two AI-Powered Options:**
 
-```typescript
-// AI-powered speech recognition
-const recognition = new SpeechRecognition();
-recognition.continuous = false;
-recognition.interimResults = false;
-recognition.lang = 'en-GB';
-```
+**Option A: OpenAI Whisper (Recommended)**
+- **Location**: `client/src/hooks/use-whisper-recognition.ts`
+- **Technology**: OpenAI Whisper API for transcription
+- Higher accuracy than browser APIs
+- Works in any browser with microphone support
+- Professional-grade speech recognition
 
-### 🧠 **2. Natural Language Understanding (NLU)**
-**Location**: `client/src/lib/nlu-parser.ts`
-
-**Technology**: Custom pattern matching and intent classification
-- Parses voice commands into structured data
-- Extracts betting parameters (amount, selection, odds)
-- Maps player/team names to database entities
-- Intent classification (bet, show odds, cancel)
+**Option B: Browser Speech API**
+- **Location**: `client/src/hooks/use-speech-recognition.ts` 
+- **Technology**: Browser's built-in Web Speech API
+- Real-time voice processing
+- No external API required
+- Chrome/Edge only
 
 ```typescript
-// AI-powered command parsing
-const betPatterns = [
-  /bet\s+(?:£|pounds?|)\s*(\d+(?:\.\d+)?)\s+on\s+(.+?)\s+to\s+win/i,
-  /place\s+(?:£|pounds?|)\s*(\d+(?:\.\d+)?)\s+on\s+(.+?)$/i,
-];
+// Whisper API transcription
+const transcription = await openai.audio.transcriptions.create({
+  file: audioBlob,
+  model: "whisper-1",
+  language: "en"
+});
 ```
+
+### 🧠 **2. AI Command Validation & Processing**
+**Location**: `server/ai-agent.ts`
+
+**Technology**: OpenAI GPT-4 for intelligent command validation
+- Analyzes voice commands using large language models
+- Extracts betting parameters with high accuracy
+- Provides confidence scores for each command
+- Intelligent error handling and suggestions
+- Context-aware bet validation
+
+```typescript
+// GPT-4 powered validation
+const validation = await openai.chat.completions.create({
+  model: "gpt-4o",
+  messages: [{ role: "user", content: transcript }],
+  response_format: { type: "json_object" }
+});
+```
+
+**Validation Features:**
+- Confidence scoring (0-100%)
+- Amount extraction and validation
+- Player/team name mapping
+- Risk assessment for large bets
+- Confirmation requirements for unclear commands
 
 ### 🔊 **3. Text-to-Speech (TTS)**
 **Location**: `client/src/hooks/use-text-to-speech.ts`
@@ -385,20 +404,29 @@ Business Logic → Database Update → TTS Confirmation
 5. **Confidence scoring** validates command accuracy
 6. **TTS generates** audio confirmation using speech synthesis
 
-### 🤖 **AI Capabilities**
+### 🤖 **Advanced AI Capabilities**
 
-**What the AI understands:**
+**What the AI agent validates:**
 - "Bet 10 pounds on Djokovic to win" 
 - "Place 25 on Arsenal"
 - "Show me current odds"
-- "Cancel last bet"
+- "Cancel my last bet"
+- Complex commands with multiple parameters
 
-**Smart features:**
-- Handles variations in speech patterns
-- Extracts numbers, names, and betting types
-- Maps partial names to full entities
-- Provides confidence scores for commands
-- Graceful error handling for unclear speech
+**Intelligent Features:**
+- **Smart Validation**: AI agent reviews each command before execution
+- **Confidence Scoring**: Provides 0-100% confidence on understanding
+- **Risk Assessment**: Flags large bets (>£50) for confirmation
+- **Context Understanding**: Knows current matches and available odds
+- **Error Recovery**: Suggests correct phrasing for unclear commands
+- **Automatic Execution**: Places validated bets without confirmation
+- **Manual Override**: Requires confirmation for risky/unclear bets
+
+**AI Processing Pipeline:**
+```
+Voice Input → Whisper Transcription → GPT-4 Validation → 
+Risk Assessment → Auto-Execute OR Request Confirmation
+```
 
 ### 🌐 **Browser-Based AI**
 

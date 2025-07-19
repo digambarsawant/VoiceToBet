@@ -3,10 +3,25 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertBetSchema } from "@shared/schema";
 import { z } from "zod";
+import multer from 'multer';
+import { transcribeAudio, validateBettingCommand, generateConfirmationMessage, handleUnclearCommand } from "./ai-agent";
 
 const voiceCommandSchema = z.object({
   command: z.string(),
   confidence: z.number().optional(),
+});
+
+// Configure multer for audio file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('audio/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only audio files are allowed'));
+    }
+  }
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -153,6 +168,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error processing voice command:", error);
       res.status(500).json({ message: "Failed to process voice command" });
+    }
+  });
+
+  // AI-powered voice transcription using Whisper
+  app.post("/api/transcribe-audio", upload.single('audio'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No audio file provided" });
+      }
+
+      const transcription = await transcribeAudio(req.file.buffer);
+      res.json(transcription);
+    } catch (error) {
+      console.error("Error transcribing audio:", error);
+      res.status(500).json({ message: "Failed to transcribe audio" });
+    }
+  });
+
+  // AI-powered voice command validation and processing
+  app.post("/api/validate-voice-command", async (req, res) => {
+    try {
+      const { command } = voiceCommandSchema.parse(req.body);
+      
+      const validation = await validateBettingCommand(command);
+      
+      if (validation.isValid && validation.extractedData.action === 'bet') {
+        // Auto-create bet if validation is successful and doesn't require confirmation
+        if (!validation.requiresConfirmation) {
+          try {
+            const betData = {
+              selection: validation.extractedData.selection || '',
+              match: validation.extractedData.match || '',
+              stake: validation.extractedData.amount?.toString() || '0',
+              odds: validation.extractedData.odds?.toString() || '1.0',
+              potentialWin: validation.extractedData.amount && validation.extractedData.odds 
+                ? (validation.extractedData.amount * validation.extractedData.odds).toString()
+                : '0',
+              status: 'pending'
+            };
+            
+            const bet = await storage.createBet(betData);
+            validation.message = await generateConfirmationMessage(validation);
+          } catch (betError) {
+            console.error("Error creating bet:", betError);
+            validation.isValid = false;
+            validation.message = "Failed to place bet. Please try again.";
+          }
+        }
+      }
+      
+      res.json(validation);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid voice command data", errors: error.errors });
+      } else {
+        console.error("Error validating voice command:", error);
+        res.status(500).json({ message: "Failed to validate voice command" });
+      }
+    }
+  });
+
+  // Handle unclear or confusing voice commands
+  app.post("/api/clarify-command", async (req, res) => {
+    try {
+      const { command } = voiceCommandSchema.parse(req.body);
+      
+      const suggestion = await handleUnclearCommand(command);
+      
+      res.json({
+        suggestion,
+        originalCommand: command,
+        clarificationNeeded: true
+      });
+    } catch (error) {
+      console.error("Error clarifying command:", error);
+      res.status(500).json({ message: "Failed to clarify command" });
     }
   });
 

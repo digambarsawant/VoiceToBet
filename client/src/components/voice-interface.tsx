@@ -108,16 +108,6 @@ export function VoiceInterface() {
           </p>
         </div>
 
-        {/* Voice Command Examples */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-          <h3 className="font-semibold text-blue-900 mb-2">Example Commands:</h3>
-          <ul className="text-blue-800 space-y-1 text-lg">
-            <li>"Bet £10 on Djokovic to win 3-0"</li>
-            <li>"Place £25 on Arsenal to win"</li>
-            <li>"Show me current odds"</li>
-            <li>"Cancel last bet"</li>
-          </ul>
-        </div>
 
         {/* Last Command Display */}
         {lastCommand && (

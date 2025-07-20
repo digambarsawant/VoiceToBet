@@ -3,25 +3,10 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertBetSchema } from "@shared/schema";
 import { z } from "zod";
-import multer from 'multer';
-import { transcribeAudio, validateBettingCommand, generateConfirmationMessage, handleUnclearCommand } from "./ai-agent";
 
 const voiceCommandSchema = z.object({
   command: z.string(),
   confidence: z.number().optional(),
-});
-
-// Configure multer for audio file uploads
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('audio/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only audio files are allowed'));
-    }
-  }
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -111,12 +96,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Process voice command
   app.post("/api/voice-command", async (req, res) => {
     try {
+      console.log('req.body', req.body)
       const { command, confidence } = voiceCommandSchema.parse(req.body);
       
       // Simple NLU processing
       const parsedCommand = parseVoiceCommand(command);
+      console.log('parsedCommand', parsedCommand); // Debug log for parsed command
       
       if (parsedCommand.type === "bet") {
+        console.log('parsedCommand.type', parsedCommand.type)
         // Create a bet from the voice command
         const bet = await storage.createBet({
           selection: parsedCommand.selection,
@@ -162,88 +150,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json({
           success: false,
           action: "command_not_understood",
-          confirmation: "Sorry, I didn't understand that command. Try saying something like 'Bet 10 pounds on Djokovic to win'",
+          confirmation: "Sorry, I didn't understand that command. Try saying something similar like 'Bet 10 pounds on Djokovic to win'",
         });
       }
     } catch (error) {
       console.error("Error processing voice command:", error);
       res.status(500).json({ message: "Failed to process voice command" });
-    }
-  });
-
-  // AI-powered voice transcription using Whisper
-  app.post("/api/transcribe-audio", upload.single('audio'), async (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ message: "No audio file provided" });
-      }
-
-      const transcription = await transcribeAudio(req.file.buffer);
-      res.json(transcription);
-    } catch (error) {
-      console.error("Error transcribing audio:", error);
-      res.status(500).json({ message: "Failed to transcribe audio" });
-    }
-  });
-
-  // AI-powered voice command validation and processing
-  app.post("/api/validate-voice-command", async (req, res) => {
-    try {
-      const { command } = voiceCommandSchema.parse(req.body);
-      
-      const validation = await validateBettingCommand(command);
-      
-      if (validation.isValid && validation.extractedData.action === 'bet') {
-        // Auto-create bet if validation is successful and doesn't require confirmation
-        if (!validation.requiresConfirmation) {
-          try {
-            const betData = {
-              selection: validation.extractedData.selection || '',
-              match: validation.extractedData.match || '',
-              stake: validation.extractedData.amount?.toString() || '0',
-              odds: validation.extractedData.odds?.toString() || '1.0',
-              potentialWin: validation.extractedData.amount && validation.extractedData.odds 
-                ? (validation.extractedData.amount * validation.extractedData.odds).toString()
-                : '0',
-              status: 'pending'
-            };
-            
-            const bet = await storage.createBet(betData);
-            validation.message = await generateConfirmationMessage(validation);
-          } catch (betError) {
-            console.error("Error creating bet:", betError);
-            validation.isValid = false;
-            validation.message = "Failed to place bet. Please try again.";
-          }
-        }
-      }
-      
-      res.json(validation);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid voice command data", errors: error.errors });
-      } else {
-        console.error("Error validating voice command:", error);
-        res.status(500).json({ message: "Failed to validate voice command" });
-      }
-    }
-  });
-
-  // Handle unclear or confusing voice commands
-  app.post("/api/clarify-command", async (req, res) => {
-    try {
-      const { command } = voiceCommandSchema.parse(req.body);
-      
-      const suggestion = await handleUnclearCommand(command);
-      
-      res.json({
-        suggestion,
-        originalCommand: command,
-        clarificationNeeded: true
-      });
-    } catch (error) {
-      console.error("Error clarifying command:", error);
-      res.status(500).json({ message: "Failed to clarify command" });
     }
   });
 
@@ -254,25 +166,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
 // Simple NLU parser for voice commands
 function parseVoiceCommand(command: string): any {
   const lowercaseCommand = command.toLowerCase();
-  
+
   // Bet pattern: "bet X on Y to win Z"
-  const betPattern = /bet\s+(?:£|pounds?|dollars?|)\s*(\d+(?:\.\d+)?)\s+on\s+(.+?)\s+(?:to\s+win\s+(.+?))?(?:\s+at\s+odds\s+(\d+(?:\.\d+)?))?/i;
-  const betMatch = lowercaseCommand.match(betPattern);
-  
+   const betPattern = /(?:bet|place|place a bet)\s+(\d+(?:\.\d+)?)\s+(?:pound|pounds|dollar|dollars|£|$)\s+on\s+([a-zA-Z\s]+?)\s+to\s+win(?:\s+([\d-]+))?(?:\s+at\s+odds\s+(\d+(?:\.\d+)?))?/i;
+   const betMatch = lowercaseCommand.match(betPattern);
   if (betMatch) {
     const stake = parseFloat(betMatch[1]);
     const selection = betMatch[2];
     const outcome = betMatch[3] || "to win";
     const odds = betMatch[4] ? parseFloat(betMatch[4]) : 2.0; // Default odds
-    
+    const MatchSelection = inferMatchName(selection)
+    const correctedMatch = inferMatch(selection)
+
+    if(correctedMatch){
     return {
       type: "bet",
       stake,
-      selection: `${selection} ${outcome}`,
+      selection: MatchSelection,
       match: inferMatch(selection),
-      odds,
+      odds: inferOdds(selection, outcome),
     };
   }
+  return { type: "unknown" };
+ }
   
   // Show odds pattern
   if (lowercaseCommand.includes("show") && lowercaseCommand.includes("odds")) {
@@ -287,10 +203,10 @@ function parseVoiceCommand(command: string): any {
   return { type: "unknown" };
 }
 
-function inferMatch(selection: string): string {
+function inferMatch(selection: string): string | null {
   const lowerSelection = selection.toLowerCase();
   
-  if (lowerSelection.includes("djokovic") || lowerSelection.includes("nadal")) {
+  if (lowerSelection.includes("djokovic") || lowerSelection.includes("nadal") || lowerSelection.includes("Novak") || lowerSelection.includes("Rafael")) {
     return "Wimbledon Final";
   }
   
@@ -298,5 +214,68 @@ function inferMatch(selection: string): string {
     return "Arsenal vs Manchester City";
   }
   
-  return "Unknown match";
+  return null;
+}
+
+function inferMatchName(selection: string): string | null {
+  const lowerSelection = selection.toLowerCase();
+  
+  if (lowerSelection.includes("djokovic") || lowerSelection.includes("novak")) {
+    return "Djokovic Nadal";
+  } else if ( lowerSelection.includes("nadal") || lowerSelection.includes("Rafael")){
+    return "Novak Rafael";
+  }else if (lowerSelection.includes("arsenal")) {
+    return "Arsenal";
+  } else if(lowerSelection.includes("manchester") || lowerSelection.includes("city")){
+    return "Manchester City";
+  }
+  
+  return null;
+}
+
+function inferOdds(selection: string, outcome: string | any): number {
+  const lowerSelection = selection.toLowerCase();
+  const lowerOutcome = outcome.toLowerCase();
+
+  // Combined selection + outcome odds
+  const specificOddsMap: { [key: string]: number } = {
+    "rafael_3-1": 5.80,
+    "nadal_3-1":5.80,
+    "rafael_3-0": 6.50,
+    "nadal_3-0": 6.50,
+    "djokovic_3-0": 3.50,
+    "djokovic_3-1": 4.20,
+    "novak_3-0": 3.50,
+    "novak_3-1": 4.20
+  };
+
+  // General selection-only odds
+  const generalOddsMap: { [key: string]: number } = {
+    "djokovic": 1.75,
+    "nadal": 2.10,
+    "novak": 1.75,
+    "rafael": 2.10,
+    "arsenal": 2.40,
+    "manchester city": 3.10,
+    "man city": 3.10,
+    "city": 3.10,
+    "draw": 3.20
+  };
+
+  // Try specific match first
+  for (const [key, odds] of Object.entries(specificOddsMap)) {
+    const [selKey, outKey] = key.split('_');
+    if (lowerSelection.includes(selKey) && lowerOutcome.includes(outKey)) {
+      return odds;
+    }
+  }
+
+  // Try general selection-based match
+  for (const [key, odds] of Object.entries(generalOddsMap)) {
+    if (lowerSelection.includes(key)) {
+      return odds;
+    }
+  }
+
+  return 2.0;
 }

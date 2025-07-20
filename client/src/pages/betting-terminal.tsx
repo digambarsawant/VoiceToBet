@@ -1,10 +1,8 @@
 import { VoiceInterface } from "@/components/voice-interface";
-import { AIVoiceInterface } from "@/components/ai-voice-interface";
 import { BettingSlip } from "@/components/betting-slip";
 import { OddsDisplay } from "@/components/odds-display";
 import { AudioControls } from "@/components/audio-controls";
 import { SystemStatus } from "@/components/system-status";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Volume2, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -65,21 +63,21 @@ export default function BettingTerminal() {
                 variant="ghost"
                 size="sm"
                 className="p-2 text-gray-600 hover:text-primary"
-                aria-label="Audio settings"
-              >
-                <Volume2 className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="p-2 text-gray-600 hover:text-primary"
                 aria-label="Help and instructions"
                 onClick={() => toast({
                   title: "Voice Commands Help",
-                  description: "Say commands like: 'Bet 10 pounds on Djokovic to win 3-0' or 'Show me current odds'",
+                  description:(
+                    <ul className="font-semibold text-gray-600 hover:text-primary text-base">
+                      <li>Say commands like :</li>
+                      <li>Bet 10 pounds on Djokovic to win 3-0</li>
+                      <li>Place a bet 25 pounds on Arsenal to win 3-1</li>
+                      <li>Show me current odds</li>
+                      <li>Cancel last bet</li>
+                    </ul>
+                  ),
                 })}
               >
-                <HelpCircle className="h-5 w-5" />
+                help <HelpCircle className="h-5 w-5" /> 
               </Button>
             </div>
           </div>
@@ -87,19 +85,8 @@ export default function BettingTerminal() {
       </header>
 
       <main id="main-content" className="max-w-4xl mx-auto px-4 py-6" role="main">
-        {/* Voice Command Interface with AI Options */}
-        <Tabs defaultValue="ai-voice" className="mb-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="ai-voice">AI Voice (Whisper + GPT)</TabsTrigger>
-            <TabsTrigger value="browser-voice">Browser Voice</TabsTrigger>
-          </TabsList>
-          <TabsContent value="ai-voice">
-            <AIVoiceInterface />
-          </TabsContent>
-          <TabsContent value="browser-voice">
-            <VoiceInterface />
-          </TabsContent>
-        </Tabs>
+        {/* Voice Command Interface */}
+        <VoiceInterface />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Current Betting Slip */}

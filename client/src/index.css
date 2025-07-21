@@ -13,16 +13,22 @@
   --card-foreground: hsl(20, 14.3%, 4.1%);
   --border: hsl(20, 5.9%, 90%);
   --input: hsl(20, 5.9%, 90%);
-  --primary: hsl(207, 90%, 54%);
+  --primary: #4527a5;
   --primary-foreground: hsl(211, 100%, 99%);
   --secondary: hsl(120, 60%, 50%);
   --secondary-foreground: hsl(120, 100%, 10%);
-  --accent: hsl(33, 100%, 50%);
+  --accent: #BF00FF;;
   --accent-foreground: hsl(33, 100%, 10%);
   --destructive: hsl(0, 84.2%, 60.2%);
   --destructive-foreground: hsl(60, 9.1%, 97.8%);
   --ring: hsl(20, 14.3%, 4.1%);
   --radius: 0.5rem;
+  --office-form-theme-primary-color-split: 69, 39, 165;
+  --pure-image-background: url('./components/assets/Entain_AI.png') center top / cover no-repeat;
+  --current-picked-theme-background: var(--pure-image-background);
+  --theme-background: linear-gradient(0deg, rgba(var(--office-form-theme-primary-color-split), 0.04), rgba(var(--office-form-theme-primary-color-split), 0.04)), rgba(255, 255, 255, 0.95);
+  --waves-background: linear-gradient(180deg, rgba(69, 39, 165, 0.18) 0%, rgba(69, 39, 165, 0.63) 100%), linear-gradient(180deg, rgba(255, 255, 255, 0.455) 0%, rgba(255, 255, 255, 0) 100%), url('./components/assets/Entain_AI.png') center top / cover no-repeat;
+  --entain-theme-background: #BF00FF;
 }
 
 .dark {
@@ -54,7 +60,11 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased text-foreground;
+    background: var(--pure-image-background);
+    background-attachment: fixed;
+    min-width: 100vw;
+    min-height: 100vh;
   }
 
   /* High contrast focus indicators for accessibility */
@@ -90,6 +100,9 @@
     color: hsl(var(--foreground));
   }
 
+  .waves-background {
+     background: hsl(var(--theme-background)),
+  }
   /* Ensure good contrast for text */
   .text-gray-50 { color: hsl(210, 40%, 98%); }
   .text-gray-100 { color: hsl(210, 40%, 96%); }

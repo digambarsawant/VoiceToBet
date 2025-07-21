@@ -79,7 +79,7 @@ export function VoiceInterface() {
   const voiceStatus = getVoiceStatus();
 
   return (
-    <Card className="mb-6">
+    <Card className="mb-6" style={{background: "var(--theme-background)"}}>
       <CardHeader>
         <CardTitle className="flex items-center">
           <Mic className="mr-2" />

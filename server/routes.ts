@@ -205,8 +205,7 @@ function parseVoiceCommand(command: string): any {
 
 function inferMatch(selection: string): string | null {
   const lowerSelection = selection.toLowerCase();
-  
-  if (lowerSelection.includes("djokovic") || lowerSelection.includes("nadal") || lowerSelection.includes("Novak") || lowerSelection.includes("Rafael")) {
+  if (lowerSelection.includes("djokovic") || lowerSelection.includes("nadal") || lowerSelection.includes("novak") || lowerSelection.includes("rafael")) {
     return "Wimbledon Final";
   }
   
@@ -221,15 +220,14 @@ function inferMatchName(selection: string): string | null {
   const lowerSelection = selection.toLowerCase();
   
   if (lowerSelection.includes("djokovic") || lowerSelection.includes("novak")) {
-    return "Djokovic Nadal";
-  } else if ( lowerSelection.includes("nadal") || lowerSelection.includes("Rafael")){
-    return "Novak Rafael";
+    return "Novak Djokovic";
+  } else if ( lowerSelection.includes("nadal") || lowerSelection.includes("rafael")){
+    return "Rafael Nadal";
   }else if (lowerSelection.includes("arsenal")) {
     return "Arsenal";
   } else if(lowerSelection.includes("manchester") || lowerSelection.includes("city")){
     return "Manchester City";
-  }
-  
+  } 
   return null;
 }
 

@@ -27,7 +27,7 @@ export function useSpeechRecognition(): SpeechRecognitionHook {
 
     recognition.continuous = false;
     recognition.interimResults = false;
-    recognition.lang = 'en-GB';
+    recognition.lang = 'en-IN';
     recognition.maxAlternatives = 1;
 
     recognition.onstart = () => {

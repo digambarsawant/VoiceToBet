@@ -119,7 +119,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           success: true,
           action: "bet_created",
           bet,
-          confirmation: `Bet added to slip: ${parsedCommand.stake} on ${parsedCommand.selection} at odds ${parsedCommand.odds}. Potential win: ${bet.potentialWin}.Please say 'yes' to confirm your bet placement.`,
+          confirmation: `Bet added to slip: ${parsedCommand.stake} on ${parsedCommand.selection} at odds ${parsedCommand.odds}. Potential win: ${bet.potentialWin}.Say 'Yes please' to proceed with your bet placement..`,
         });
       } else if (parsedCommand.type === "show_odds") {
         const matches = await storage.getMatches();

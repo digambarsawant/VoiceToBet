@@ -75,12 +75,12 @@ export default function BettingTerminal() {
                       <li># Say commands like below for bet selection:</li>
                       <WhiteLine/>
                       <li>1.Bet 10 pounds on Nadal to win 3-0</li>
-                      <li>2.Place a bet 25 pounds on Arsenal to win 3-1</li>
+                      <li>2.Place a bet 25 pounds on Arsenal to win</li>
                       <li>3.Put a bet of 2.5 pounds on Novak to win</li>
                       <WhiteLine/>
                       <li># Say commands like below for bet placement and cancel confirmmation:</li>
                       <WhiteLine/>
-                      <li>1.yes</li>
+                      <li>1.yes please</li>
                       <li>2.Cancel last bet</li>
                     </ul>
                   ),

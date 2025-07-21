@@ -119,7 +119,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           success: true,
           action: "bet_created",
           bet,
-          confirmation: `Bet placed: ${parsedCommand.stake} on ${parsedCommand.selection} at odds ${parsedCommand.odds}. Potential win: ${bet.potentialWin}`,
+          confirmation: `Bet added to slip: ${parsedCommand.stake} on ${parsedCommand.selection} at odds ${parsedCommand.odds}. Potential win: ${bet.potentialWin}.Please say 'yes' to confirm your bet placement.`,
         });
       } else if (parsedCommand.type === "show_odds") {
         const matches = await storage.getMatches();
@@ -168,7 +168,7 @@ function parseVoiceCommand(command: string): any {
   const lowercaseCommand = command.toLowerCase();
 
   // Bet pattern: "bet X on Y to win Z"
-    const betPattern = /(?:bet|place|put|please|play|can you|could you)?\s*(?:a|of)?\s*(\d+(?:\.\d+)?)\s+(?:pound|pounds|dollar|dollars|£|\$).*?\s+(?:on|of)\s+([a-zA-Z\s]+?)\s+to\s+win(?:\s+((?:\d+)(?:\s*(?:dash|minus|-|\.|\s)?\s*)?(?:\d+)?))?/i;
+    const betPattern = /(?:bet|place|put|please|play|can you|could you)?\s*(?:a|of)?\s*(?:£|\$)?\s*(\d+(?:\.\d+)?)\s*(?:pound|pounds|dollar|dollars|£|\$)?(?:.*?\s+)?(?:on|of)\s+([a-zA-Z\s]+?)\s+to\s+win(?:\s+((?:\d+)(?:\s*(?:dash|minus|\.|-|\s)?\s*)?(?:\d+)?))?/i;
    const betMatch = lowercaseCommand.match(betPattern);
   if (betMatch) {
     const stake = parseFloat(betMatch[1]);

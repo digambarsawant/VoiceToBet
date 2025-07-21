@@ -7,12 +7,14 @@ import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useBetContext } from "./bet-context";
 
 export function VoiceInterface() {
   const [lastCommand, setLastCommand] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { speak } = useTextToSpeech();
+  const { triggerPlaceBet } = useBetContext();
   
   const {
     isListening,
@@ -22,7 +24,7 @@ export function VoiceInterface() {
     isSupported,
     error,
   } = useSpeechRecognition();
-
+ 
   const processCommandMutation = useMutation({
     mutationFn: async (command: string) => {
       const response = await apiRequest("POST", "/api/voice-command", {
@@ -56,7 +58,11 @@ export function VoiceInterface() {
   useEffect(() => {
     if (transcript) {
       setLastCommand(transcript);
+      if(transcript.toLocaleLowerCase() == 'yes'){
+        triggerPlaceBet();
+      } else {
       processCommandMutation.mutate(transcript);
+      }
     }
   }, [transcript]);
 

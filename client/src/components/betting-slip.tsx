@@ -6,15 +6,23 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 import type { Bet } from "@shared/schema";
+import { useBetContext } from "./bet-context";
+import { useEffect } from "react";
 
 export function BettingSlip() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { speak } = useTextToSpeech();
+  const { setPlaceBetHandler } = useBetContext();
 
-  const { data: bets = [], isLoading } = useQuery({
+  const { data: bets = [], isLoading } = useQuery<Bet[]>({
     queryKey: ["/api/bets"],
   });
+
+
+  const pendingBets = (bets as Bet[]).filter((bet: Bet) => bet.status === "pending");
+  const totalStake = pendingBets.reduce((sum: number, bet: Bet) => sum + parseFloat(bet.stake), 0);
+  const totalReturns = pendingBets.reduce((sum: number, bet: Bet) => sum + parseFloat(bet.potentialWin), 0);
 
   const deleteBetMutation = useMutation({
     mutationFn: async (betId: number) => {
@@ -65,10 +73,6 @@ export function BettingSlip() {
     },
   });
 
-  const pendingBets = bets.filter((bet: Bet) => bet.status === "pending");
-  const totalStake = pendingBets.reduce((sum: number, bet: Bet) => sum + parseFloat(bet.stake), 0);
-  const totalReturns = pendingBets.reduce((sum: number, bet: Bet) => sum + parseFloat(bet.potentialWin), 0);
-
   const handleRemoveBet = (betId: number, selection: string) => {
     deleteBetMutation.mutate(betId);
   };
@@ -83,6 +87,10 @@ export function BettingSlip() {
     }
     placeBetsMutation.mutate();
   };
+
+  useEffect(() => {
+    setPlaceBetHandler(handlePlaceBets);
+  }, [handlePlaceBets, setPlaceBetHandler]);
 
   if (isLoading) {
     return (

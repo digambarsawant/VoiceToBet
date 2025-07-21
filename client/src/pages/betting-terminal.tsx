@@ -68,11 +68,15 @@ export default function BettingTerminal() {
                   title: "Voice Commands Help",
                   description:(
                     <ul className="font-semibold text-gray-600 hover:text-primary text-base">
-                      <li>Say commands like :</li>
+                      <li>Say commands like below for bet selection:</li>
+                      <li> </li>
                       <li>Bet 10 pounds on Nadal to win 3-0</li>
                       <li>Place a bet 25 pounds on Arsenal to win 3-1</li>
                       <li>Put a bet of 2.5 pounds on Novak to win</li>
-                      <li>Show me current odds</li>
+                      <li> </li>
+                      <li>Say commands like below for bet placement and cancel confirmmation:</li>
+                      <li> </li>
+                      <li>yes</li>
                       <li>Cancel last bet</li>
                     </ul>
                   ),

@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import BettingTerminal from "@/pages/betting-terminal";
 import NotFound from "@/pages/not-found";
+import { BetProvider } from "@/components/bet-context";
 
 function Router() {
   return (
@@ -18,10 +19,12 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
+      <BetProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </BetProvider>
     </QueryClientProvider>
   );
 }

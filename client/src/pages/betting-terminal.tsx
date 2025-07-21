@@ -12,6 +12,10 @@ import EntainLogo from "../components/assets/Entain_logo.png";
 export default function BettingTerminal() {
   const { toast } = useToast();
 
+  const WhiteLine = () => (
+  <hr style={{ border: "none", borderTop: "2px solid white", margin: "8px 0" }} />
+  );
+
   useEffect(() => {
     // Announce page load for screen readers
     const announcement = document.createElement("div");
@@ -68,16 +72,16 @@ export default function BettingTerminal() {
                   title: "Voice Commands Help",
                   description:(
                     <ul className="font-semibold text-gray-600 hover:text-primary text-base">
-                      <li>Say commands like below for bet selection:</li>
-                      <li> </li>
-                      <li>Bet 10 pounds on Nadal to win 3-0</li>
-                      <li>Place a bet 25 pounds on Arsenal to win 3-1</li>
-                      <li>Put a bet of 2.5 pounds on Novak to win</li>
-                      <li> </li>
-                      <li>Say commands like below for bet placement and cancel confirmmation:</li>
-                      <li> </li>
-                      <li>yes</li>
-                      <li>Cancel last bet</li>
+                      <li># Say commands like below for bet selection:</li>
+                      <WhiteLine/>
+                      <li>1.Bet 10 pounds on Nadal to win 3-0</li>
+                      <li>2.Place a bet 25 pounds on Arsenal to win 3-1</li>
+                      <li>3.Put a bet of 2.5 pounds on Novak to win</li>
+                      <WhiteLine/>
+                      <li># Say commands like below for bet placement and cancel confirmmation:</li>
+                      <WhiteLine/>
+                      <li>1.yes</li>
+                      <li>2.Cancel last bet</li>
                     </ul>
                   ),
                 })}

@@ -15,7 +15,8 @@ export function VoiceInterface() {
   const queryClient = useQueryClient();
   const { speak } = useTextToSpeech();
   const { triggerPlaceBet } = useBetContext();
-  
+  const placeBetRegex = /^(yes[\s\.]*)+$/i;
+
   const {
     isListening,
     startListening,
@@ -58,7 +59,8 @@ export function VoiceInterface() {
   useEffect(() => {
     if (transcript) {
       setLastCommand(transcript);
-      if(transcript.toLocaleLowerCase() == 'yes'){
+     
+      if(placeBetRegex.test(transcript.toLowerCase())){
         triggerPlaceBet();
       } else {
       processCommandMutation.mutate(transcript);

@@ -69,8 +69,9 @@ export default function BettingTerminal() {
                   description:(
                     <ul className="font-semibold text-gray-600 hover:text-primary text-base">
                       <li>Say commands like :</li>
-                      <li>Bet 10 pounds on Djokovic to win 3-0</li>
+                      <li>Bet 10 pounds on Nadal to win 3-0</li>
                       <li>Place a bet 25 pounds on Arsenal to win 3-1</li>
+                      <li>Put a bet of 2.5 pounds on Novak to win</li>
                       <li>Show me current odds</li>
                       <li>Cancel last bet</li>
                     </ul>

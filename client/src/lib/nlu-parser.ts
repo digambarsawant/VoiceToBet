@@ -137,6 +137,6 @@ export function generateConfirmationMessage(command: ParsedBetCommand): string {
     case "cancel_bet":
       return "Last bet has been cancelled";
     default:
-      return "Sorry, I didn't understand that command. Try saying something like 'Bet 10 pounds on Djokovic to win'";
+      return "Sorry, I didn't understand that command. Try saying something similar like 'Bet 10 pounds on Nadal to win'";
   }
 }

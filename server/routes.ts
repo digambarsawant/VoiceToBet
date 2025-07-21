@@ -150,7 +150,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json({
           success: false,
           action: "command_not_understood",
-          confirmation: "Sorry, I didn't understand that command. Try saying something similar like 'Bet 10 pounds on Djokovic to win'",
+          confirmation: "Sorry, I didn't understand that command. Try saying something similar like 'Bet 10 pounds on Nadal to win'",
         });
       }
     } catch (error) {
@@ -168,15 +168,26 @@ function parseVoiceCommand(command: string): any {
   const lowercaseCommand = command.toLowerCase();
 
   // Bet pattern: "bet X on Y to win Z"
-   const betPattern = /(?:bet|place|place a bet)\s+(\d+(?:\.\d+)?)\s+(?:pound|pounds|dollar|dollars|£|$)\s+on\s+([a-zA-Z\s]+?)\s+to\s+win(?:\s+([\d-]+))?(?:\s+at\s+odds\s+(\d+(?:\.\d+)?))?/i;
+    const betPattern = /(?:bet|place|put|please|play|can you|could you)?\s*(?:a|of)?\s*(\d+(?:\.\d+)?)\s+(?:pound|pounds|dollar|dollars|£|\$).*?\s+(?:on|of)\s+([a-zA-Z\s]+?)\s+to\s+win(?:\s+((?:\d+)(?:\s*(?:dash|minus|-|\.|\s)?\s*)?(?:\d+)?))?/i;
    const betMatch = lowercaseCommand.match(betPattern);
   if (betMatch) {
     const stake = parseFloat(betMatch[1]);
     const selection = betMatch[2];
-    const outcome = betMatch[3] || "to win";
+    let outcome = betMatch[3] || "to win";
     const odds = betMatch[4] ? parseFloat(betMatch[4]) : 2.0; // Default odds
     const MatchSelection = inferMatchName(selection)
     const correctedMatch = inferMatch(selection)
+    if (outcome ) {
+     outcome = outcome.trim();
+
+    // Handle "minus", "dash", ".", or "-" as separators
+    outcome = outcome.replace(/\s*(dash|minus|\.|-)\s*/gi, "-");
+
+    // Handle compact format like "31" → "3-1"
+    if (/^\d{2}$/.test(outcome)) {
+      outcome = outcome[0] + '-' + outcome[1];
+    }
+    }
 
     if(correctedMatch){
     return {
